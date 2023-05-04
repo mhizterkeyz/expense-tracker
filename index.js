@@ -1,3 +1,5 @@
+const axios = require("axios");
+const { CronJob } = require("cron");
 const express = require("express");
 const helmet = require("helmet");
 const path = require("path");
@@ -24,3 +26,13 @@ app.use("/api", api);
 app.listen(port, () => {
   console.log(`Server started on port ${port}`);
 });
+
+new CronJob(
+  "*/10 * * * * *",
+  function () {
+    axios.get("https://expense-tracker-s65i.onrender.com").catch(console.debug);
+  },
+  null,
+  true,
+  "America/Los_Angeles"
+);
