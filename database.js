@@ -20,7 +20,13 @@ const transform = (_doc, ret) => {
 const labels = mongoose.model(
   "labels",
   mongoose.Schema(
-    { name: String, value: Number, user: mongoose.SchemaTypes.ObjectId },
+    {
+      name: String,
+      value: Number,
+      user: mongoose.SchemaTypes.ObjectId,
+      description: String,
+      date: Date,
+    },
     { timestamps: true, toJSON: { virtuals: true, transform } }
   )
 );

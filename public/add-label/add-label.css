@@ -25,7 +25,8 @@ form {
 }
 
 input[type="text"],
-input[type="number"] {
+input[type="number"],
+input[type="date"] {
   padding: 8px 12px;
   margin-bottom: 20px;
   border: 1px solid #ccc;

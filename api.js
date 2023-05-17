@@ -87,6 +87,8 @@ api.post(
   guard(),
   withErrorHandler("adding label", async (req, res) => {
     const name = req.body.name || "Unlabelled";
+    const date = req.body.date;
+    const description = req.body.description;
     let value = Math.abs(Number(req.body.value));
 
     value = isNaN(value) ? 0 : value;
@@ -95,6 +97,8 @@ api.post(
       name,
       value,
       user: req.user.id,
+      date,
+      description,
     });
 
     sendJson(res, HTTP_STATUS.CREATED, "Label created", label);
@@ -114,7 +118,10 @@ api.get("/labels", guard(), async (req, res) => {
 
   const labels = await database.labels.find({
     user: req.user.id,
-    createdAt: { $gte: startDate, $lte: endDate },
+    $or: [
+      { date: { $gte: startDate, $lte: endDate } },
+      { createdAt: { $gte: startDate, $lte: endDate } },
+    ],
   });
 
   let total = 0;
