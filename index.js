@@ -32,7 +32,7 @@ app.listen(port, () => {
 new CronJob(
   "*/10 * * * * *",
   function () {
-    axios.get("https://expense-tracker-s65i.onrender.com").catch(console.debug);
+    axios.get("https://expense-tracker-s65i.onrender.com").catch(() => {});
   },
   null,
   true,

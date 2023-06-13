@@ -6,9 +6,13 @@ const authData = JSON.parse(localStorage.authData);
 const startDateInput = document.getElementById("start-date");
 const endDateInput = document.getElementById("end-date");
 
+const formatNumber = (number) => {
+  return (+number.toFixed(2)).toLocaleString();
+};
+
 const loadData = (startDate, endDate) => {
   const chartBoard = document.querySelector(".chart-board");
-  const totalDisplay = document.querySelector("#total");
+  const cardsDisplay = document.querySelector(".cards");
 
   fetch(`/api/labels?start_date=${startDate}&end_date=${endDate}`, {
     method: "GET",
@@ -32,21 +36,94 @@ const loadData = (startDate, endDate) => {
           1,
           ...Object.values(data.labels).map((item) => item.value)
         );
-
-        totalDisplay.innerHTML = `Total: ₦ ${(+data.total.toFixed(
-          2
-        )).toLocaleString()}`;
+        const cards = [
+          {
+            name: "Period Total",
+            value: `₦ ${formatNumber(data.periodTotal)}`,
+          },
+          {
+            name: "Period Max",
+            value: `₦ ${formatNumber(data.periodMax.value)} (${
+              data.periodMax.name
+            })`,
+          },
+          {
+            name: "Period Min",
+            value: `₦ ${formatNumber(data.periodMin.value)} (${
+              data.periodMin.name
+            })`,
+          },
+          {
+            name: "This Month Total",
+            value: `₦ ${formatNumber(data.thisMonthTotal)}`,
+          },
+          {
+            name: "This Month Max",
+            value: `₦ ${formatNumber(data.thisMonthMax.value)} (${
+              data.thisMonthMax.name
+            })`,
+          },
+          {
+            name: "This Month Min",
+            value: `₦ ${formatNumber(data.thisMonthMin.value)} (${
+              data.thisMonthMin.name
+            })`,
+          },
+          {
+            name: "Last Month Total",
+            value: `₦ ${formatNumber(data.lastMonthTotal)}`,
+          },
+          {
+            name: "Last Month Max",
+            value: `₦ ${formatNumber(data.lastMonthMax.value)} (${
+              data.lastMonthMax.name
+            })`,
+          },
+          {
+            name: "Last Month Min",
+            value: `₦ ${formatNumber(data.lastMonthMin.value)} (${
+              data.lastMonthMin.name
+            })`,
+          },
+          {
+            name: "3 Months Ago Total",
+            value: `₦ ${formatNumber(data.threeMonthsAgoTotal)}`,
+          },
+          {
+            name: "3 Months Ago Max",
+            value: `₦ ${formatNumber(data.threeMonthsAgoMax.value)} (${
+              data.threeMonthsAgoMax.name
+            })`,
+          },
+          {
+            name: "3 Months Ago Min",
+            value: `₦ ${formatNumber(data.threeMonthsAgoMin.value)} (${
+              data.lastMonthMin.name
+            })`,
+          },
+        ];
 
         chartBoard.innerHTML = "";
-        Object.values(data.labels).forEach((item) => {
-          chartBoard.innerHTML += `<div style="position: relative" class="chart">
-    <div class="chart-label">${item.name}:</div>
+        cardsDisplay.innerHTML = "";
+
+        Object.values(data.labels)
+          .sort((a, b) => b.value - a.value)
+          .forEach((item) => {
+            chartBoard.innerHTML += `<div style="position: relative" class="chart">
     <div class="chart-bar" style="width: ${
       (item.value / base) * 100
-    }%;display: flex;align-items: center;justify-content: center;color: #000;"><span style="display: flex;align-items: center;justify-content: center;position: absolute;width: 100%;height: 100%;left: 0;top: 0;">₦ ${(+item.value.toFixed(
-            2
-          )).toLocaleString()}</span></div>
+    }%;display: flex;align-items: center;justify-content: center;color: #000;"><span style="display: flex;align-items: center;justify-content: center;position: absolute;width: 100%;height: 100%;left: 0;top: 0;">₦ ${formatNumber(
+              item.value
+            )} (${item.name})</span></div>
   </div>`;
+          });
+
+        cards.forEach((card) => {
+          cardsDisplay.innerHTML += `
+          <p>
+            ${card.name}: ${card.value}
+          <p>
+          `;
         });
       }
     })

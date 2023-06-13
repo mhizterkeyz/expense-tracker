@@ -1,6 +1,7 @@
 const { compare } = require("bcryptjs");
 const { Router } = require("express");
 const jwt = require("jsonwebtoken");
+const moment = require("moment");
 const database = require("./database");
 const config = require("./config");
 
@@ -118,27 +119,71 @@ api.get("/labels", guard(), async (req, res) => {
 
   const labels = await database.labels.find({
     user: req.user.id,
-    $or: [
-      { date: { $gte: startDate, $lte: endDate } },
-      { createdAt: { $gte: startDate, $lte: endDate } },
-    ],
   });
 
+  const thisMonth = moment().startOf("month");
+  const lastMonth = thisMonth.clone().subtract(1, "month");
+  const threeMonthsAgo = lastMonth.clone().subtract(1, "month");
+  const names = {};
+  const numbers = {};
+  let allTimeTotal = 0;
   let total = 0;
-  let count = 0;
+
+  const processValues = (key, cur, name) => {
+    numbers[`${key}Total`] = (numbers[`${key}Total`] || 0) + cur.value;
+    names[`${key}Count`] = (names[`${key}Count`] || 0) + 1;
+    numbers[`${key}Average`] = numbers[`${key}Total`] / names[`${key}Count`];
+    names[`${key}${name}`] = (names[`${key}${name}`] || 0) + cur.value;
+    if (
+      !numbers[`${key}Max`] ||
+      names[`${key}${name}`] > numbers[`${key}Max`].value
+    ) {
+      numbers[`${key}Max`] = {
+        name: cur.name,
+        value: names[`${key}${name}`],
+      };
+    }
+
+    if (
+      !numbers[`${key}Min`] ||
+      names[`${key}${name}`] <
+        names[`${key}${numbers[`${key}Min`].name.toLowerCase()}`]
+    ) {
+      numbers[`${key}Min`] = {
+        name: cur.name,
+        value: names[`${key}${name}`],
+      };
+    }
+  };
 
   const reduced = labels.reduce((acc, cur) => {
     const name = cur.name.toLowerCase();
-    if (acc[name]) {
-      acc[name].value += cur.value;
-    } else {
-      acc[name] = {
-        name: cur.name,
-        value: cur.value,
-      };
+
+    allTimeTotal += cur.value;
+
+    if (thisMonth.isSameOrBefore(cur.date || cur.createdAt)) {
+      processValues("thisMonth", cur, name);
+    } else if (lastMonth.isSameOrBefore(cur.date || cur.createdAt)) {
+      processValues("lastMonth", cur, name);
+    } else if (threeMonthsAgo.isSameOrBefore(cur.date || cur.createdAt)) {
+      processValues("threeMonthsAgo", cur, name);
     }
-    total += cur.value;
-    count += 1;
+
+    if (
+      moment(startDate).isSameOrBefore(cur.date || cur.createdAt) &&
+      moment(endDate).isSameOrAfter(cur.date || cur.createdAt)
+    ) {
+      processValues("period", cur, name);
+      total += cur.value;
+      if (acc[name]) {
+        acc[name].value += cur.value;
+      } else {
+        acc[name] = {
+          name: cur.name,
+          value: cur.value,
+        };
+      }
+    }
 
     return acc;
   }, {});
@@ -146,7 +191,7 @@ api.get("/labels", guard(), async (req, res) => {
   sendJson(res, HTTP_STATUS.OK, "Labels retrieved", {
     labels: reduced,
     total,
-    count,
+    ...numbers,
   });
 });
 
