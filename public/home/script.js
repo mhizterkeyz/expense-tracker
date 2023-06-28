@@ -44,13 +44,13 @@ const loadData = (startDate, endDate) => {
           {
             name: "Period Max",
             value: `₦ ${formatNumber(data.periodMax?.value)} (${
-              data.periodMax.name
+              data.periodMax?.name
             })`,
           },
           {
             name: "Period Min",
             value: `₦ ${formatNumber(data.periodMin?.value)} (${
-              data.periodMin.name
+              data.periodMin?.name
             })`,
           },
           {
@@ -60,13 +60,13 @@ const loadData = (startDate, endDate) => {
           {
             name: "This Month Max",
             value: `₦ ${formatNumber(data.thisMonthMax?.value)} (${
-              data.thisMonthMax.name
+              data.thisMonthMax?.name
             })`,
           },
           {
             name: "This Month Min",
             value: `₦ ${formatNumber(data.thisMonthMin?.value)} (${
-              data.thisMonthMin.name
+              data.thisMonthMin?.name
             })`,
           },
           {
@@ -76,13 +76,13 @@ const loadData = (startDate, endDate) => {
           {
             name: "Last Month Max",
             value: `₦ ${formatNumber(data.lastMonthMax?.value)} (${
-              data.lastMonthMax.name
+              data.lastMonthMax?.name
             })`,
           },
           {
             name: "Last Month Min",
             value: `₦ ${formatNumber(data.lastMonthMin?.value)} (${
-              data.lastMonthMin.name
+              data.lastMonthMin?.name
             })`,
           },
           {
@@ -92,13 +92,13 @@ const loadData = (startDate, endDate) => {
           {
             name: "3 Months Ago Max",
             value: `₦ ${formatNumber(data.threeMonthsAgoMax?.value)} (${
-              data.threeMonthsAgoMax.name
+              data.threeMonthsAgoMax?.name
             })`,
           },
           {
             name: "3 Months Ago Min",
             value: `₦ ${formatNumber(data.threeMonthsAgoMin?.value)} (${
-              data.lastMonthMin.name
+              data.lastMonthMin?.name
             })`,
           },
         ];
