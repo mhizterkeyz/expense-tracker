@@ -7,7 +7,7 @@ const startDateInput = document.getElementById("start-date");
 const endDateInput = document.getElementById("end-date");
 
 const formatNumber = (number) => {
-  return (+number.toFixed(2)).toLocaleString();
+  return (+(number || 0).toFixed(2)).toLocaleString();
 };
 
 const loadData = (startDate, endDate) => {
