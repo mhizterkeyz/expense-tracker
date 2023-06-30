@@ -59,62 +59,11 @@ const guard = () => {
   };
 };
 
-api.post(
-  "/login",
-  withErrorHandler("logging in", async (req, res) => {
-    let user = await database.users.findOne({ name: req.body.name });
-    if (user) {
-      const validPassword = await compare(req.body.password, user.password);
-      if (!validPassword) {
-        sendJson(res, HTTP_STATUS.UNAUTHORIZED, "Unauthorized");
-        return;
-      }
-
-      sendJson(res, HTTP_STATUS.OK, "Login successful", signInUser(user));
-      return;
-    }
-
-    user = await database.users.create({
-      name: req.body.name,
-      password: req.body.password,
-    });
-
-    sendJson(res, HTTP_STATUS.CREATED, "Signup successful", signInUser(user));
-  })
-);
-
-api.post(
-  "/labels",
-  guard(),
-  withErrorHandler("adding label", async (req, res) => {
-    const name = req.body.name || "Unlabelled";
-    const date = req.body.date;
-    const description = req.body.description;
-    let value = Math.abs(Number(req.body.value));
-
-    value = isNaN(value) ? 0 : value;
-
-    const label = await database.labels.create({
-      name,
-      value,
-      user: req.user.id,
-      date,
-      description,
-    });
-
-    sendJson(res, HTTP_STATUS.CREATED, "Label created", label);
-  })
-);
-
-api.get("/labels", guard(), async (req, res) => {
+const getLabels = async (req, res) => {
   let startDate = new Date(req.query.start_date);
   let endDate = new Date(req.query.end_date);
   if (isNaN(startDate.getTime())) {
-    startDate = new Date();
-    startDate.setMonth(startDate.getMonth() - 1);
-  }
-  if (isNaN(endDate.getTime())) {
-    endDate = new Date();
+    startDate = moment().startOf("month").toDate();
   }
 
   const labels = await database.labels.find({
@@ -171,7 +120,8 @@ api.get("/labels", guard(), async (req, res) => {
 
     if (
       moment(startDate).isSameOrBefore(cur.date || cur.createdAt) &&
-      moment(endDate).isSameOrAfter(cur.date || cur.createdAt)
+      (isNaN(endDate.getTime()) ||
+        moment(endDate).isSameOrAfter(cur.date || cur.createdAt))
     ) {
       processValues("period", cur, name);
       total += cur.value;
@@ -193,6 +143,55 @@ api.get("/labels", guard(), async (req, res) => {
     total,
     ...numbers,
   });
-});
+};
+
+api.post(
+  "/login",
+  withErrorHandler("logging in", async (req, res) => {
+    let user = await database.users.findOne({ name: req.body.name });
+    if (user) {
+      const validPassword = await compare(req.body.password, user.password);
+      if (!validPassword) {
+        sendJson(res, HTTP_STATUS.UNAUTHORIZED, "Unauthorized");
+        return;
+      }
+
+      sendJson(res, HTTP_STATUS.OK, "Login successful", signInUser(user));
+      return;
+    }
+
+    user = await database.users.create({
+      name: req.body.name,
+      password: req.body.password,
+    });
+
+    sendJson(res, HTTP_STATUS.CREATED, "Signup successful", signInUser(user));
+  })
+);
+
+api.post(
+  "/labels",
+  guard(),
+  withErrorHandler("adding label", async (req, res) => {
+    const name = req.body.name || "Unlabelled";
+    const date = req.body.date;
+    const description = req.body.description;
+    let value = Math.abs(Number(req.body.value));
+
+    value = isNaN(value) ? 0 : value;
+
+    const label = await database.labels.create({
+      name,
+      value,
+      user: req.user.id,
+      date,
+      description,
+    });
+
+    sendJson(res, HTTP_STATUS.CREATED, "Label created", label);
+  })
+);
+
+api.get("/labels", guard(), getLabels);
 
 module.exports = api;
